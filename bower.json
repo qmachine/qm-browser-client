@@ -7,7 +7,7 @@
     ],
     "dependencies": {
         "coffee-script": "1.6.3",
-        "jslint": "jslint#2013.05.31"
+        "jslint": "jslint#2013.05.31",
         "quanah": "0.2.0"
     },
     "description": "Browser client for QMachine",
