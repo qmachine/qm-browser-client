@@ -2,7 +2,7 @@
 
 //- qmachine.js ~~
 //                                                      ~~ (c) SRW, 15 Nov 2012
-//                                                  ~~ last updated 02 Feb 2014
+//                                                  ~~ last updated 09 May 2014
 
 (function (global, sandbox) {
     'use strict';
@@ -54,10 +54,10 @@
 
     var ajax, atob, AVar, avar, btoa, can_run_remotely, convert_to_js, copy,
         deserialize, defineProperty, in_a_browser, in_a_WebWorker, is_closed,
-        is_online, is_Function, is_RegExp, is_String, jobs, lib, load_data,
-        load_script, map, mapreduce, mothership, origin, ply, puts, read,
-        recent, reduce, revive, run_remotely, serialize, state, submit, sync,
-        update_local, update_remote, volunteer, write;
+        is_Function, is_RegExp, is_String, jobs, lib, load_data, load_script,
+        map, mapreduce, mothership, origin, ply, puts, read, recent, reduce,
+        revive, run_remotely, serialize, state, submit, sync, update_local,
+        update_remote, volunteer, write;
 
  // Definitions
 
@@ -256,7 +256,7 @@
                 (task.hasOwnProperty('x'))          &&
                 (is_Function(task.f))               &&
                 (task.x instanceof AVar)            &&
-                (is_online())                       &&
+                //(is_online())                       &&
                 (is_closed(task, state.exemptions[task.x.key]) === false));
     };
 
@@ -282,7 +282,8 @@
                 y.val = global.CoffeeScript['eval'](x);
                 return evt.exit();
             }
-            lib('QM_WWW_URL/coffeescript.js').Q(function (lib_evt) {
+            lib('//cdnjs.cloudflare.com/ajax/libs/coffee-script' +
+                    '/1.6.3/coffee-script.min.js').Q(function (lib_evt) {
              // This function needs documentation.
                 y.val = global.CoffeeScript['eval'](x);
                 lib_evt.exit();
@@ -563,12 +564,14 @@
         return ((typeof x === 'string') || (x instanceof String));
     };
 
+ /*
     is_online = function () {
      // This function returns a boolean. It is not currently necessary, but I
      // have future plans that will require this function, so I have already
      // generalized QM in preparation.
         return (mothership === 'LOCAL_ADDR') || global.navigator.onLine;
     };
+ */
 
     jobs = function (box) {
      // This function retrieves a list of tasks that need to be executed.
@@ -816,7 +819,7 @@
         return y;
     };
 
-    mothership = 'QM_API_URL';
+    mothership = 'https://api.qmachine.org';
 
     origin = function () {
      // This function needs documentation.
