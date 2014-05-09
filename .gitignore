@@ -11,26 +11,7 @@
 #   control -- always execute your commits manually!
 #
 #                                                       ~~ (c) SRW, 31 Oct 2011
-#                                                   ~~ last updated 12 Feb 2013
-
-#-  Temporary project directories
-build/
-cache/
-icons/
-var/
-
-#-  CouchApp configuration files -- these may contain passwords!
-.couchapprc
-
-#-  JavaScript interpreter history files
-.d8_history
-.v8_history
-
-#-  Mercurial repository itself (if present)
-.hg/
-
-#-  Node.js modules
-node_modules/
+#                                                   ~~ last updated 09 May 2014
 
 #-  Vim files (taken from http://git.io/qmQqxA)
 .*.s[a-w][a-z]
