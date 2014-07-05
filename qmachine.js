@@ -2,7 +2,7 @@
 
 //- qmachine.js ~~
 //                                                      ~~ (c) SRW, 15 Nov 2012
-//                                                  ~~ last updated 10 May 2014
+//                                                  ~~ last updated 05 Jul 2014
 
 (function (global, sandbox) {
     'use strict';
@@ -882,7 +882,7 @@
         var args = Array.prototype.slice.call(arguments);
         return sync.apply(this, args).Q(function (evt) {
          // This function needs documentation.
-            if ((global.hasOwnProperty('console')) &&
+            if ((global.console instanceof Object) &&
                     (is_Function(global.console.log))) {
                 global.console.log(args.join(' '));
                 return evt.exit();
@@ -890,7 +890,7 @@
             return evt.fail('The `console.log` method is not available.');
         }).on('error', function (message) {
          // This function needs documentation.
-            if ((global.hasOwnProperty('console')) &&
+            if ((global.console instanceof Object) &&
                     (is_Function(global.console.error))) {
                 global.console.error('Error:', message);
             }
