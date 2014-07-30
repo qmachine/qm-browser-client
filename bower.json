@@ -11,6 +11,7 @@
         "quanah": "0.2.1"
     },
     "description": "Browser client for QMachine",
+    "ignore": [],
     "homepage": "https://www.qmachine.org",
     "keywords": [
         "crowdsourcing",
