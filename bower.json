@@ -8,7 +8,7 @@
     "dependencies": {
         "coffee-script": "1.6.3",
         "jslint": "jslint#2013.05.31",
-        "quanah": "0.2.1"
+        "quanah": "0.2.2"
     },
     "description": "Browser client for QMachine",
     "ignore": [],
@@ -25,5 +25,5 @@
         "./qmachine.js"
     ],
     "name": "qm",
-    "version": "1.1.12"
+    "version": "1.1.13"
 }
