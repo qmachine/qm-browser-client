@@ -1,10 +1,9 @@
 # qm
 
 This repository contains the browser client for
-[QMachine](https://www.qmachine.org). It can also be installed by
-[Bower](http://bower.io) via
+[QMachine](https://www.qmachine.org).
 
-    $ bower install qm
-
+For more information, please see the
+[manual](https://docs.qmachine.org/en/latest/browser-client.html).
 
 <!-- vim:set syntax=markdown: -->
