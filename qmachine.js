@@ -2,7 +2,7 @@
 
 //- qmachine.js ~~
 //                                                      ~~ (c) SRW, 15 Nov 2012
-//                                                  ~~ last updated 05 Jul 2014
+//                                                  ~~ last updated 14 Aug 2014
 
 (function (global, sandbox) {
     'use strict';
@@ -14,28 +14,28 @@
     /*jslint indent: 4, maxlen: 80 */
 
     /*properties
-        a, ActiveXObject, addEventListener, adsafe, anon, appendChild, apply,
+        a, ActiveXObject, addEventListener, anon, appendChild, apply, ass,
         atob, attachEvent, avar, b, bitwise, body, box, browser, btoa, by,
-        call, can_run_remotely, cap, charAt, charCodeAt, CoffeeScript, comm,
-        configurable, console, constructor, contentWindow, continue,
-        createElement, css, data, debug, def, '__defineGetter__',
-        defineProperty, '__defineSetter__', detachEvent, devel, diagnostics,
-        display, document, done, enumerable, env, epitaph, eqeq, error, errors,
-        es5, eval, evil, exemptions, exit, f, fail, floor, forin, fragment,
-        fromCharCode, get, getElementsByTagName, global, hasOwnProperty, head,
-        host, ignoreCase, importScripts, indexOf, join, JSLINT, key, length,
-        lib, load_data, load_script, location, log, map, mapreduce, method,
-        multiline, navigator, newcap, node, nomen, now, on, onLine, onload,
+        call, can_run_remotely, charAt, charCodeAt, closure, CoffeeScript,
+        comm, configurable, console, constructor, contentWindow, continue,
+        createElement, data, debug, def, '__defineGetter__', defineProperty,
+        '__defineSetter__', detachEvent, devel, diagnostics, display, document,
+        done, enumerable, env, epitaph, eqeq, error, errors, es5, eval, evil,
+        exemptions, exit, f, fail, floor, forin, fromCharCode, get,
+        getElementsByTagName, global, hasOwnProperty, head, host, ignoreCase,
+        importScripts, indexOf, join, JSLINT, key, length, lib, load_data,
+        load_script, location, log, map, mapreduce, method, multiline,
+        navigator, newcap, node, nomen, now, on, onLine, onload,
         onreadystatechange, open, parentElement, parse, passfail, plusplus,
         ply, postMessage, predef, properties, protocol, prototype, push, puts,
         Q, QM, QUANAH, query, random, readyState, reason, recent, reduce,
         regexp, removeChild, removeEventListener, replace, responseText,
-        result, results, revive, rhino, run_remotely, safe, send, set,
+        result, results, revive, rhino, run_remotely, send, set,
         setRequestHeader, setTimeout, shelf, shift, slice, sloppy, source, src,
         status, stay, stringify, stupid, style, sub, submit, sync, test, time,
-        toJSON, toSource, toString, todo, undef, unparam, url, val, value,
-        valueOf, vars, via, visibility, volunteer, white, window, windows,
-        withCredentials, writable, x, XDomainRequest, XMLHttpRequest, y
+        toJSON, toSource, toString, todo, unparam, url, val, value, valueOf,
+        vars, via, visibility, volunteer, white, window, withCredentials,
+        writable, x, XDomainRequest, XMLHttpRequest, y
     */
 
  // Prerequisites
@@ -126,12 +126,10 @@
             };
             request.open(method, url, true);
             if (method === 'POST') {
-             // This code only ever runs as part of an API call. As of v0.9.11,
-             // my Node.js server does not check for this header, but some
+             // This code only ever runs as part of an API call. As of v1.1.14,
+             // neither the Node.js nor Ruby servers check for this header, but
              // frameworks like Express (http://expressjs.com) that parse the
-             // body of the incoming request automatically *do* care. In my
-             // testing, it hasn't messed up CORS or anything, but if things
-             // suddenly stop working, this is going to be my first suspect!
+             // body of the incoming request automatically *do* care.
                 request.setRequestHeader('Content-Type', 'application/json');
             }
             request.send(body);
@@ -485,46 +483,37 @@
              // answer to our question would be `true`, which is why we have
              // to negate JSLINT's output.
                 flag = (false === global.JSLINT($f, copy(options, {
-                 // JSLINT configuration options, as of version 2012-07-27:
-                    'adsafe':   false,  //- enforce ADsafe rules?
-                    'anon':     true,   //- allow `function()`?
+                 // JSLINT configuration options, as of version 2013.05.31:
+                    'ass':      true,   //- allow assignment expressions?
                     'bitwise':  true,   //- allow use of bitwise operators?
                     'browser':  false,  //- assume browser as JS environment?
-                    'cap':      true,   //- allow uppercase HTML?
-                    //confusion:true,   //- allow inconsistent type usage?
+                    'closure':  true,   //- tolerate Google Closure idioms?
                     'continue': true,   //- allow continuation statement?
-                    'css':      false,  //- allow CSS workarounds?
                     'debug':    false,  //- allow debugger statements?
                     'devel':    false,  //- allow output logging?
                     'eqeq':     true,   //- allow `==` instead of `===`?
                     'es5':      true,   //- allow ECMAScript 5 syntax?
                     'evil':     false,  //- allow the `eval` statement?
                     'forin':    true,   //- allow unfiltered `for..in`?
-                    'fragment': false,  //- allow HTML fragments?
                     //'indent': 4,
                     //'maxerr': 50,
                     //'maxlen': 80,
                     'newcap':   true,   //- constructors must be capitalized?
                     'node':     false,  //- assume Node.js as JS environment?
                     'nomen':    true,   //- allow names' dangling underscores?
-                    'on':       false,  //- allow HTML event handlers
                     'passfail': true,   //- halt the scan on the first error?
                     'plusplus': true,   //- allow `++` and `--` usage?
                     'predef':   {},     //- predefined global variables
                     'properties': false,//- require JSLINT /*properties */?
                     'regexp':   true,   //- allow `.` in regexp literals?
                     'rhino':    false,  //- assume Rhino as JS environment?
-                    'safe':     false,  //- enforce safe subset of ADsafe?
                     'sloppy':   true,   //- ES5 strict mode pragma is optional?
                     'stupid':   true,   //- allow `*Sync` calls in Node.js?
                     'sub':      true,   //- allow all forms of subset notation?
                     'todo':     true,   //- allow comments that start with TODO
-                    'undef':    false,  //- allow out-of-order definitions?
                     'unparam':  true,   //- allow unused parameters?
                     'vars':     true,   //- allow multiple `var` statements?
-                    'white':    true,   //- allow sloppy whitespace?
-                    //'widget': false,  //- assume Yahoo widget JS environment?
-                    'windows':  false   //- assume Windows OS?
+                    'white':    true    //- allow sloppy whitespace?
                 })));
             }
             ply(x).by(function (key, val) {
