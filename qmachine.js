@@ -254,7 +254,7 @@
                 (task.hasOwnProperty('x'))          &&
                 (is_Function(task.f))               &&
                 (task.x instanceof AVar)            &&
-                //(is_online())                       &&
+             // (is_online())                       &&
                 (is_closed(task, state.exemptions[task.x.key]) === false));
     };
 
