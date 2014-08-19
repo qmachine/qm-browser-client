@@ -2,7 +2,7 @@
 
 //- qmachine.js ~~
 //                                                      ~~ (c) SRW, 15 Nov 2012
-//                                                  ~~ last updated 15 Aug 2014
+//                                                  ~~ last updated 18 Aug 2014
 
 (function (global, sandbox) {
     'use strict';
@@ -16,26 +16,26 @@
     /*properties
         a, ActiveXObject, addEventListener, anon, appendChild, apply, ass,
         atob, attachEvent, avar, b, bitwise, body, box, browser, btoa, by,
-        call, can_run_remotely, charAt, charCodeAt, closure, CoffeeScript,
-        comm, configurable, console, constructor, contentWindow, continue,
-        createElement, data, debug, def, '__defineGetter__', defineProperty,
-        '__defineSetter__', detachEvent, devel, diagnostics, display, document,
-        done, enumerable, env, epitaph, eqeq, error, errors, es5, eval, evil,
-        exemptions, exit, f, fail, floor, forin, fromCharCode, get,
-        getElementsByTagName, global, hasOwnProperty, head, host, ignoreCase,
-        importScripts, indexOf, join, JSLINT, key, length, lib, load_data,
-        load_script, location, log, map, mapreduce, method, multiline,
-        navigator, newcap, node, nomen, now, on, onLine, onload,
-        onreadystatechange, open, parentElement, parse, passfail, plusplus,
-        ply, postMessage, predef, properties, protocol, prototype, push, puts,
-        Q, QM, QUANAH, query, random, readyState, reason, recent, reduce,
-        regexp, removeChild, removeEventListener, replace, responseText,
-        result, results, revive, rhino, run_remotely, send, set,
+        call, can_run_remotely, charAt, charCodeAt, clearTimeout, closure,
+        CoffeeScript, comm, configurable, console, constructor, contentWindow,
+        continue, createElement, data, debug, def, '__defineGetter__',
+        defineProperty, '__defineSetter__', detachEvent, devel, diagnostics,
+        display, document, done, enable_volunteer, enumerable, env, epitaph,
+        eqeq, error, errors, es5, eval, evil, exemptions, exit, f, fail, floor,
+        forin, fromCharCode, get, getElementsByTagName, global, hasOwnProperty,
+        head, host, ignoreCase, importScripts, indexOf, join, JSLINT, key,
+        length, lib, load_data, load_script, location, log, map, mapreduce,
+        method, multiline, navigator, newcap, node, nomen, now, on, onLine,
+        onload, onreadystatechange, open, parentElement, parse, passfail,
+        plusplus, ply, postMessage, predef, properties, protocol, prototype,
+        push, puts, Q, QM, QUANAH, query, random, readyState, reason, recent,
+        reduce, regexp, removeChild, removeEventListener, replace,
+        responseText, result, results, revive, rhino, run_remotely, send, set,
         setRequestHeader, setTimeout, shelf, shift, slice, sloppy, source, src,
-        status, stay, stringify, stupid, style, sub, submit, sync, test, time,
-        toJSON, toSource, toString, todo, unparam, url, val, value, valueOf,
-        vars, via, visibility, volunteer, white, window, withCredentials,
-        writable, x, XDomainRequest, XMLHttpRequest, y
+        start, status, stay, stringify, stop, stupid, style, sub, submit, sync,
+        test, time, timer, toJSON, toSource, toString, todo, unparam, url, val,
+        value, valueOf, vars, via, visibility, volunteer, white, window,
+        withCredentials, writable, x, XDomainRequest, XMLHttpRequest, y
     */
 
  // Prerequisites
@@ -56,8 +56,8 @@
         deserialize, defineProperty, in_a_browser, in_a_WebWorker, is_closed,
         is_Function, is_RegExp, is_String, jobs, lib, load_data, load_script,
         map, mapreduce, mothership, origin, ply, puts, read, recent, reduce,
-        revive, run_remotely, serialize, state, submit, sync, update_local,
-        update_remote, volunteer, write;
+        revive, run_remotely, serialize, start, state, stop, submit, sync,
+        update_local, update_remote, volunteer, write;
 
  // Definitions
 
@@ -1193,10 +1193,29 @@
         });
     };
 
+    start = function () {
+     // This function enables volunteering inside the background event loop
+     // contained in this giant anonymous closure. This pairs with the `stop`
+     // function to provide convenience, as this functionality and background
+     // event loop were previously required to be provided as part of the app
+     // that leverages this library.
+        state.enable_volunteer = true;
+        revive();
+        return;
+    };
+
     state = {
         box: avar().key,
+        enable_volunteer: false,
         exemptions: {},
         recent: {}
+    };
+
+    stop = function () {
+     // This function pairs with `start`; see explanation there.
+        state.enable_volunteer = false;
+        revive();
+        return;
     };
 
     submit = function (x, f, box, env) {
@@ -1679,6 +1698,8 @@
             reduce:         reduce,
             revive:         revive,
             shelf:          {},
+            start:          start,
+            stop:           stop,
             submit:         submit,
             sync:           sync,
             volunteer:      volunteer
@@ -1697,6 +1718,45 @@
             }
             return;
         });
+        return;
+    }());
+
+    (function loop() {
+     // Here, we start a simple event loop that runs in the background. It
+     // enables the process of scripting volunteers significantly easier, too,
+     // because that responsibility was formerly placed on the app code that
+     // uses this library.
+        if (is_Function(global.clearTimeout)) {
+            global.clearTimeout(loop.timer);
+        }
+        if (state.enable_volunteer === true) {
+            volunteer(state.box).on('error', function (message) {
+             // This function redirects error messages appropriately.
+                if (message === 'Nothing to do ...') {
+                    puts(message);
+                } else if ((global.console instanceof Object) &&
+                        (is_Function(global.console.error))) {
+                    global.console.error('Error:', message);
+                } else {
+                    puts('Error:', message);
+                }
+                if (is_Function(global.setTimeout)) {
+                    loop.timer = global.setTimeout(loop, 1000);
+                }
+                return;
+            }).Q(function (evt) {
+             // This function provides visual feedback for debugging as soon as
+             // the volunteer finishes executing a task.
+                puts('Done:', this.key);
+                if (is_Function(global.setTimeout)) {
+                    loop.timer = global.setTimeout(loop, 1000);
+                }
+                return evt.exit();
+            });
+        } else if (is_Function(global.setTimeout)) {
+            loop.timer = global.setTimeout(loop, 1000);
+        }
+        revive();
         return;
     }());
 
