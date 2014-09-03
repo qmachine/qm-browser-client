@@ -2,7 +2,7 @@
 
 //- qmachine.js ~~
 //                                                      ~~ (c) SRW, 15 Nov 2012
-//                                                  ~~ last updated 18 Aug 2014
+//                                                  ~~ last updated 03 Sep 2014
 
 (function (global, sandbox) {
     'use strict';
@@ -53,11 +53,11 @@
  // Declarations
 
     var ajax, atob, AVar, avar, btoa, can_run_remotely, convert_to_js, copy,
-        deserialize, defineProperty, in_a_browser, in_a_WebWorker, is_closed,
-        is_Function, is_RegExp, is_String, jobs, lib, load_data, load_script,
-        map, mapreduce, mothership, origin, ply, puts, read, recent, reduce,
-        revive, run_remotely, serialize, start, state, stop, submit, sync,
-        update_local, update_remote, volunteer, write;
+        deserialize, defineProperty, get_avar, get_jobs, in_a_browser,
+        in_a_WebWorker, is_closed, is_Function, is_RegExp, is_String, lib,
+        load_data, load_script, map, mapreduce, mothership, origin, ply, puts,
+        recent, reduce, revive, run_remotely, serialize, set_avar, start,
+        state, stop, submit, sync, update_local, update_remote, volunteer;
 
  // Definitions
 
@@ -396,6 +396,28 @@
         });
     };
 
+    get_avar = function (x) {
+     // This function needs documentation.
+        var y = ajax('GET', mothership + '/box/' + x.box + '?key=' + x.key);
+        return y.Q(function (evt) {
+         // This function deserializes the string returned as the `val` of
+         // `y` into a temporary variable and then copies its property values
+         // back onto `y`.
+            copy(deserialize(y.val), y);
+            return evt.exit();
+        });
+    };
+
+    get_jobs = function (box) {
+     // This function retrieves a list of tasks that need to be executed.
+        var y = ajax('GET', mothership + '/box/' + box + '?status=waiting');
+        return y.Q(function (evt) {
+         // This function needs documentation.
+            y.val = JSON.parse(y.val);
+            return evt.exit();
+        });
+    };
+
     in_a_browser = function () {
      // This function returns a boolean.
         return ((global.hasOwnProperty('location'))             &&
@@ -560,16 +582,6 @@
         return (mothership === 'LOCAL_ADDR') || global.navigator.onLine;
     };
  */
-
-    jobs = function (box) {
-     // This function retrieves a list of tasks that need to be executed.
-        var y = ajax('GET', mothership + '/box/' + box + '?status=waiting');
-        return y.Q(function (evt) {
-         // This function needs documentation.
-            y.val = JSON.parse(y.val);
-            return evt.exit();
-        });
-    };
 
     lib = function (url) {
      // This function returns an avar.
@@ -886,18 +898,6 @@
         });
     };
 
-    read = function (x) {
-     // This function needs documentation.
-        var y = ajax('GET', mothership + '/box/' + x.box + '?key=' + x.key);
-        return y.Q(function (evt) {
-         // This function deserializes the string returned as the `val` of
-         // `y` into a temporary variable and then copies its property values
-         // back onto `y`.
-            copy(deserialize(y.val), y);
-            return evt.exit();
-        });
-    };
-
     recent = function (method, url) {
      // This function helps keep clients from polling too rapidly when they are
      // waiting for a remote task to finish. It keeps track of HTTP requests
@@ -1040,7 +1040,7 @@
              // This function polls for changes in the `status` property using
              // a variation on the `update_local` function as a non-blocking
              // `while` loop -- hooray for disposable avars!
-                var temp = read(task);
+                var temp = get_avar(task);
                 temp.on('error', function (message) {
                  // This alerts `task` that something has gone awry.
                     return evt.fail(message);
@@ -1191,6 +1191,15 @@
             }
             return ($val === undefined) ? val : $val;
         });
+    };
+
+    set_avar = function (x) {
+     // This function sends an HTTP POST to QMachine. It doesn't worry
+     // about the return data because QMachine isn't going to return
+     // any data -- the request will either succeed or fail, as
+     // indicated by the HTTP status code returned. It returns an avar.
+        var url = mothership + '/box/' + x.box + '?key=' + x.key;
+        return ajax('POST', url, JSON.stringify(x));
     };
 
     start = function () {
@@ -1392,7 +1401,7 @@
      // the one from its remote representation. It is written as a function of
      // `evt` because it is intended to be used as an argument to Method Q.
         var local = this;
-        read(local).Q(function (temp_evt) {
+        get_avar(local).Q(function (temp_evt) {
          // This function copies the remote representation's property values
          // onto `local`. Note that the `copy` function does not copy `comm`
          // from `this` to `local` because `evt.exit` wouldn't work anymore.
@@ -1411,7 +1420,7 @@
      // to update the remote copy of an avar so that its `val` property matches
      // the one from its local representation. It is written as a function of
      // `evt` because it is intended to be used as an argument to Method Q.
-        write(this).Q(function (temp_evt) {
+        set_avar(this).Q(function (temp_evt) {
          // This function just releases execution for the local avar (`this`).
             temp_evt.exit();
             return evt.exit();
@@ -1438,7 +1447,7 @@
          // This function retrieves the key of a task from the queue so we
          // can retrieve that task's full description. If no tasks are found,
          // we will simply check back later :-)
-            var temp = jobs(box);
+            var temp = get_jobs(box);
             temp.on('error', function (message) {
              // This function notifies `task` that something has gone wrong
              // during retrieval and interpretation of its description.
@@ -1449,7 +1458,7 @@
                 if ((queue instanceof Array) === false) {
                  // This seems like a common problem that will occur whenever
                  // users begin implementing custom storage mechanisms.
-                    return temp_evt.fail('`jobs` should return an array');
+                    return temp_evt.fail('`get_jobs` should return an array');
                 }
                 if (queue.length === 0) {
                  // Here, we choose to `fail` not because this is a dreadful
@@ -1573,15 +1582,6 @@
             return;
         }).Q(update_remote);
         return task;
-    };
-
-    write = function (x) {
-     // This function sends an HTTP POST to QMachine. It doesn't worry
-     // about the return data because QMachine isn't going to return
-     // any data -- the request will either succeed or fail, as
-     // indicated by the HTTP status code returned. It returns an avar.
-        var url = mothership + '/box/' + x.box + '?key=' + x.key;
-        return ajax('POST', url, JSON.stringify(x));
     };
 
  // Prototype definitions
