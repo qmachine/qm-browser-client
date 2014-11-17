@@ -2,7 +2,7 @@
 
 //- qmachine.js ~~
 //                                                      ~~ (c) SRW, 15 Nov 2012
-//                                                  ~~ last updated 03 Sep 2014
+//                                                  ~~ last updated 16 Nov 2014
 
 (function (global, sandbox) {
     'use strict';
@@ -53,7 +53,7 @@
  // Declarations
 
     var ajax, atob, AVar, avar, btoa, can_run_remotely, convert_to_js, copy,
-        deserialize, defineProperty, get_avar, get_jobs, in_a_browser,
+        deserialize, defineProperty, get_avar, get_list, in_a_browser,
         in_a_WebWorker, is_closed, is_Function, is_RegExp, is_String, lib,
         load_data, load_script, map, mapreduce, mothership, origin, ply, puts,
         recent, reduce, revive, run_remotely, serialize, set_avar, start,
@@ -408,7 +408,7 @@
         });
     };
 
-    get_jobs = function (box) {
+    get_list = function (box) {
      // This function retrieves a list of tasks that need to be executed.
         var y = ajax('GET', mothership + '/box/' + box + '?status=waiting');
         return y.Q(function (evt) {
@@ -1447,7 +1447,7 @@
          // This function retrieves the key of a task from the queue so we
          // can retrieve that task's full description. If no tasks are found,
          // we will simply check back later :-)
-            var temp = get_jobs(box);
+            var temp = get_list(box);
             temp.on('error', function (message) {
              // This function notifies `task` that something has gone wrong
              // during retrieval and interpretation of its description.
@@ -1458,7 +1458,7 @@
                 if ((queue instanceof Array) === false) {
                  // This seems like a common problem that will occur whenever
                  // users begin implementing custom storage mechanisms.
-                    return temp_evt.fail('`get_jobs` should return an array');
+                    return temp_evt.fail('`get_list` should return an array');
                 }
                 if (queue.length === 0) {
                  // Here, we choose to `fail` not because this is a dreadful
