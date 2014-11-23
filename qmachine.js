@@ -2,7 +2,7 @@
 
 //- qmachine.js ~~
 //                                                      ~~ (c) SRW, 15 Nov 2012
-//                                                  ~~ last updated 16 Nov 2014
+//                                                  ~~ last updated 22 Nov 2014
 
 (function (global, sandbox) {
     'use strict';
@@ -57,7 +57,8 @@
         in_a_WebWorker, is_closed, is_Function, is_RegExp, is_String, lib,
         load_data, load_script, map, mapreduce, mothership, origin, ply, puts,
         recent, reduce, revive, run_remotely, serialize, set_avar, start,
-        state, stop, submit, sync, update_local, update_remote, volunteer;
+        state, stop, submit, sync, uuid, update_local, update_remote,
+        volunteer;
 
  // Definitions
 
@@ -1214,7 +1215,7 @@
     };
 
     state = {
-        box: avar().key,
+        box: 'ooga',
         enable_volunteer: false,
         exemptions: {},
         recent: {}
@@ -1394,6 +1395,32 @@
     };
 
     sync = global.QUANAH.sync;
+
+    uuid = function () {
+     // This function generates random hexadecimal strings of length 32. These
+     // strings don't satisfy RFC 4122 or anything, but they're conceptually
+     // the same as UUIDs. An open issue in PhantomJS (http://goo.gl/8r4C40)
+     // regarding incorrect conversion of numbers to strings motivated the
+     // addition of output validation to this function. Although it appears
+     // that sampling uniform random numbers from [0.001, 1] rather than [0, 1]
+     // will avoid the bug, such a strategy will only be adopted after thorough
+     // investigation and benchmarking.
+        var y = Math.random().toString(16).slice(2, 32);
+        if (y === '') {
+         // This shouldn't ever happen in JavaScript, but Adobe/Mozilla Tamarin
+         // has some weird quirks due to its ActionScript roots.
+            while (y.length < 32) {
+                y += (Math.random() * 1e16).toString(16);
+            }
+            y = y.slice(0, 32);
+        } else {
+         // Every other JS implementation will use this instead.
+            while (y.length < 32) {
+                y += Math.random().toString(16).slice(2, 34 - y.length);
+            }
+        }
+        return ((/^[0-9a-f]{32}$/).test(y)) ? y : uuid();
+    };
 
     update_local = function (evt) {
      // This function is used in the `run_remotely` and `volunteer` functions
@@ -1761,6 +1788,8 @@
     }());
 
  // Invocations
+
+    state.box = uuid();
 
     global.QUANAH.def({
         can_run_remotely:   can_run_remotely,
