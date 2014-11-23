@@ -1641,6 +1641,36 @@
         }
     });
 
+    defineProperty(AVar.prototype, 'key', {
+     // This definition adds a `key` property to Quanah's avars as a means to
+     // enable QMachine's per-instance queueing system. The other necessary
+     // component is the `QM.box` definition a little further down.
+        configurable: true,
+        enumerable: false,
+        get: function () {
+         // This function needs documentation.
+            var key = uuid();
+            this.key = key;
+            return key;
+        },
+        set: function (x) {
+         // This function needs documentation.
+            if (is_String(x) === false) {
+                throw new TypeError('`key` property must be a string.');
+            }
+            if ((/^[A-z0-9]+$/).test(x) === false) {
+                throw new Error('Invalid assignment to `key`: "' + x + '"');
+            }
+            defineProperty(this, 'key', {
+                configurable: true,
+                enumerable: true,
+                writable: true,
+                value: x
+            });
+            return;
+        }
+    });
+
     defineProperty(AVar.prototype, 'print', {
      // NOTE: I commented two of the next three lines out because their values
      // are the default ones specified by the ES5.1 standard.
