@@ -2,7 +2,7 @@
 
 //- qmachine.js ~~
 //                                                      ~~ (c) SRW, 15 Nov 2012
-//                                                  ~~ last updated 22 Nov 2014
+//                                                  ~~ last updated 24 Nov 2014
 
 (function (global, sandbox) {
     'use strict';
@@ -1399,27 +1399,28 @@
     uuid = function () {
      // This function generates random hexadecimal strings of length 32. These
      // strings don't satisfy RFC 4122 or anything, but they're conceptually
-     // the same as UUIDs. An open issue in PhantomJS (http://goo.gl/8r4C40)
-     // regarding incorrect conversion of numbers to strings motivated the
-     // addition of output validation to this function. Although it appears
-     // that sampling uniform random numbers from [0.001, 1] rather than [0, 1]
-     // will avoid the bug, such a strategy will only be adopted after thorough
-     // investigation and benchmarking.
-        var y = Math.random().toString(16).slice(2, 32);
-        if (y === '') {
-         // This shouldn't ever happen in JavaScript, but Adobe/Mozilla Tamarin
-         // has some weird quirks due to its ActionScript roots.
-            while (y.length < 32) {
-                y += (Math.random() * 1e16).toString(16);
-            }
-            y = y.slice(0, 32);
-        } else {
-         // Every other JS implementation will use this instead.
-            while (y.length < 32) {
-                y += Math.random().toString(16).slice(2, 34 - y.length);
-            }
+     // the same as UUIDs. This version of the function generates characters by
+     // sampling uniformly from [0, 16] and flooring, which generates an index
+     // that maps to a character. This definition works in old browsers as well
+     // as Adobe/Mozilla Tamarin and PhantomJS, the last of which has an open
+     // issue regarding number-to-string conversion (http://goo.gl/8r4C40) that
+     // caused the previous definition to generate invalid characters. As a
+     // bonus, this version also generates a more uniform range of hexadecimal
+     // strings than the previous one, in which zeroes were underrepresented.
+     // An even faster version is shown in the comments, but it infuriates
+     // JSLint because it uses the `|` operator instead of `Math.floor` :-P
+        var c, i, y;
+        c = [
+            '0', '1', '2', '3', '4', '5', '6', '7',
+            '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'
+        ];
+        //y = c[(Math.random() * 16) | 0];
+        y = c[Math.floor(Math.random() * 16)];
+        for (i = 0; i < 31; i += 1) {
+            //y += c[(Math.random() * 16) | 0];
+            y += c[Math.floor(Math.random() * 16)];
         }
-        return ((/^[0-9a-f]{32}$/).test(y)) ? y : uuid();
+        return y;
     };
 
     update_local = function (evt) {
