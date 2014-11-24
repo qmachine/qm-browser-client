@@ -698,7 +698,7 @@
             global.document.body.appendChild(proxy);
             return;
         };
-        y = avar((x instanceof AVar) ? x : {val: x});
+        y = (x instanceof AVar) ? copy(x, avar(x.val)) : avar(x);
         yql = function (evt) {
          // This function uses Yahoo Query Language (YQL) as a cross-domain
          // proxy for retrieving text files. Binary file types probably won't
@@ -770,7 +770,7 @@
 
     map = function (x, f, box, env) {
      // This function needs documentation.
-        var y = ((x instanceof AVar) ? x : avar({val: x})).Q(function (evt) {
+        var y = ((x instanceof AVar) ? x : avar(x)).Q(function (evt) {
          // This function needs documentation.
             var i, n, temp;
             n = this.val.length;
@@ -931,7 +931,7 @@
      // This function needs documentation.
         var f, y;
         f = convert_to_js(redf);
-        y = ((x instanceof AVar) ? x : avar({val: x})).Q(function (evt) {
+        y = ((x instanceof AVar) ? x : avar(x)).Q(function (evt) {
          // This function needs documentation.
             if (is_Function(f.val) === false) {
                 f.on('error', evt.fail);
@@ -956,7 +956,7 @@
                 temp.push(submit(obj, g, box, env).on('error', evt.fail));
             }
             if (n !== x.length) {
-                temp.push(avar({val: x[x.length - 1]}).on('error', evt.fail));
+                temp.push(avar(x[x.length - 1]).on('error', evt.fail));
             }
             sync.apply(this, temp).Q(function (temp_evt) {
              // This function needs documentation.
@@ -1004,7 +1004,7 @@
      // If special property values have been added to `x`, they will be copied
      // onto `f` and `x` via the "copy constructor" idiom. Note that special
      // properties defined for `f` will be overwritten ...
-        f = avar({box: obj.x.box, val: obj.f});
+        f = copy({box: obj.x.box}, avar(obj.f));
         first = true;
         handler = function (message) {
          // This function tells the original `x` that something has gone awry.
@@ -1014,7 +1014,7 @@
             }
             return;
         };
-        x = avar({box: obj.x.box, key: obj.x.key, val: obj.x.val});
+        x = copy({box: obj.x.box, key: obj.x.key}, avar(obj.x.val));
         f.on('error', handler).Q(update_remote);
         x.on('error', handler).Q(update_remote);
      // Step 2: Use a `sync` statement to represent the remote computation and
@@ -1026,14 +1026,9 @@
          // `task` to "inherit" system-specific properties such as QMachine's
          // `box` property automatically. My design here reflects the idea that
          // the execution should follow the data.
-            var task = avar({
-                box: obj.x.box,
-                status: 'waiting',
-                val: {
-                    f: f.key,
-                    x: x.key
-                }
-            });
+            var task = avar({f: f.key, x: x.key});
+            task.box = obj.x.box;
+            task.status = 'waiting';
             task.on('error', function (message) {
              // This function alerts `f` and `x` that something has gone awry.
                 return evt.fail(message);
@@ -1296,7 +1291,7 @@
             if (is_closed(task, options)) {
                 return evt.fail(global.JSLINT.errors[0].reason);
             }
-            temp = avar({box: y.box, val: y.val});
+            temp = copy({box: y.box}, avar(y.val));
             state.exemptions[temp.key] = options;
             temp.on('error', function (message) {
              // This function needs documentation.
@@ -1307,10 +1302,10 @@
              // This function runs remotely on a volunteer machine.
                 /*global QM: false */
                 var env, f, temp, x;
-                env = QM.avar({val: this.val.env});
+                env = QM.avar(this.val.env);
                 f = this.val.f;
                 temp = this;
-                x = QM.avar({val: this.val.x});
+                x = QM.avar(this.val.x);
                 env.on('error', evt.fail);
                 x.on('error', evt.fail);
                 QM.sync(env, x).Q(function (evt) {
@@ -1319,7 +1314,7 @@
                     var prereqs = [];
                     QM.ply(env.val).by(function (key, val) {
                      // This function needs documentation.
-                        var libs = QM.avar({val: val.slice()});
+                        var libs = QM.avar(val.slice());
                         libs.on('error', function (message) {
                          // This function needs documentation.
                             return evt.fail(message);
@@ -1470,7 +1465,7 @@
         if (is_String(box) === false) {
             box = global.QM.box;
         }
-        var task = avar({box: box});
+        var task = copy({box: box}, avar());
         task.Q(function (evt) {
          // This function retrieves the key of a task from the queue so we
          // can retrieve that task's full description. If no tasks are found,
@@ -1536,7 +1531,7 @@
          // the current environment. The transform defined in `task.val.f` is
          // still able to distribute its own sub-tasks for remote execution.
             var f, first, handler, x;
-            f = avar({box: box, key: task.val.f});
+            f = copy({box: box, key: task.val.f}, avar());
             first = true;
             handler = function (message) {
              // This function runs if execution of the abstract task fails.
@@ -1556,8 +1551,8 @@
                     first = false;
                     task.val.epitaph = message;
                     task.status = 'failed';
-                    temp_f = avar(f).Q(update_remote);
-                    temp_x = avar(x).Q(update_remote);
+                    temp_f = copy(f, avar()).Q(update_remote);
+                    temp_x = copy(x, avar()).Q(update_remote);
                     sync(temp_f, temp_x).Q(function (temp_evt) {
                      // This function runs only when the error messages have
                      // finished syncing to remote storage successfully.
@@ -1567,7 +1562,7 @@
                 }
                 return;
             };
-            x = avar({box: box, key: task.val.x});
+            x = copy({box: box, key: task.val.x}, avar());
             f.Q(update_local).on('error', handler);
             x.Q(update_local).on('error', handler);
             sync(f, x).Q(function (evt) {
