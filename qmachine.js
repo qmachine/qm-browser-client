@@ -2,7 +2,7 @@
 
 //- qmachine.js ~~
 //                                                      ~~ (c) SRW, 15 Nov 2012
-//                                                  ~~ last updated 24 Nov 2014
+//                                                  ~~ last updated 30 Nov 2014
 
 (function (global, sandbox) {
     'use strict';
@@ -1654,7 +1654,7 @@
             if (is_String(x) === false) {
                 throw new TypeError('`key` property must be a string.');
             }
-            if ((/^[A-z0-9]+$/).test(x) === false) {
+            if ((/^\w+$/).test(x) === false) {
                 throw new Error('Invalid assignment to `key`: "' + x + '"');
             }
             defineProperty(this, 'key', {
