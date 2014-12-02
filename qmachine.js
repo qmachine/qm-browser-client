@@ -2,7 +2,7 @@
 
 //- qmachine.js ~~
 //                                                      ~~ (c) SRW, 15 Nov 2012
-//                                                  ~~ last updated 30 Nov 2014
+//                                                  ~~ last updated 02 Dec 2014
 
 (function (global, sandbox) {
     'use strict';
@@ -1411,7 +1411,7 @@
         ];
         //y = c[(Math.random() * 16) | 0];
         y = c[Math.floor(Math.random() * 16)];
-        for (i = 0; i < 31; i += 1) {
+        for (i = 1; i < 32; i += 1) {
             //y += c[(Math.random() * 16) | 0];
             y += c[Math.floor(Math.random() * 16)];
         }
