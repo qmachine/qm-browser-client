@@ -11,14 +11,10 @@
 #   control -- always execute your commits manually!
 #
 #                                                       ~~ (c) SRW, 31 Oct 2011
-#                                                   ~~ last updated 09 May 2014
+#                                                   ~~ last updated 02 Dec 2014
 
-#-  Vim files (taken from http://git.io/qmQqxA)
-.*.s[a-w][a-z]
-*.un~
-Session.vim
-.netrwhist
-*~
+#-  Temporary directories
+bower_components/
 
 #-  OS generated files (adapted from http://git.io/fBFWrw)
 ._*
@@ -30,5 +26,12 @@ Session.vim
 ehthumbs.db
 Icon?
 Thumbs.db
+
+#-  Vim files (taken from http://git.io/qmQqxA)
+.*.s[a-w][a-z]
+*.un~
+Session.vim
+.netrwhist
+*~
 
 #-  vim:set syntax=gitconfig:
