@@ -1654,7 +1654,7 @@
             if (is_String(x) === false) {
                 throw new TypeError('`key` property must be a string.');
             }
-            if ((/^\w+$/).test(x) === false) {
+            if ((/^[\w\-]+$/).test(x) === false) {
                 throw new Error('Invalid assignment to `key`: "' + x + '"');
             }
             defineProperty(this, 'key', {
