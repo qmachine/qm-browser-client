@@ -2,7 +2,7 @@
 
 //- qmachine.js ~~
 //                                                      ~~ (c) SRW, 15 Nov 2012
-//                                                  ~~ last updated 02 Dec 2014
+//                                                  ~~ last updated 06 Dec 2014
 
 (function (global, sandbox) {
     'use strict';
@@ -1674,7 +1674,9 @@
         enumerable: true,
         //writable: false,
         value: function () {
-         // This function is syntactic sugar for logging output.
+         // This function is syntactic sugar for logging output. I honestly
+         // cannot remember why I used `QM.puts` here instead of just `puts`,
+         // because this is a function that should *not* run remotely ...
             QM.puts(this);
             return this;
         }
@@ -1774,6 +1776,8 @@
         return;
     }());
 
+ // Invocations
+
     (function loop() {
      // Here, we start a simple event loop that runs in the background. It
      // enables the process of scripting volunteers significantly easier, too,
@@ -1812,8 +1816,6 @@
         revive();
         return;
     }());
-
- // Invocations
 
     state.box = uuid();
 
