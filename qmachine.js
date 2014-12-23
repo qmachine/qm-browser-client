@@ -2,7 +2,7 @@
 
 //- qmachine.js ~~
 //                                                      ~~ (c) SRW, 15 Nov 2012
-//                                                  ~~ last updated 06 Dec 2014
+//                                                  ~~ last updated 23 Dec 2014
 
 (function (global, sandbox) {
     'use strict';
@@ -1004,7 +1004,7 @@
      // If special property values have been added to `x`, they will be copied
      // onto `f` and `x` via the "copy constructor" idiom. Note that special
      // properties defined for `f` will be overwritten ...
-        f = copy({box: obj.x.box}, avar(obj.f));
+        f = copy({box: obj.x.box, key: uuid()}, avar(obj.f));
         first = true;
         handler = function (message) {
          // This function tells the original `x` that something has gone awry.
@@ -1028,6 +1028,7 @@
          // the execution should follow the data.
             var task = avar({f: f.key, x: x.key});
             task.box = obj.x.box;
+            task.key = uuid();
             task.status = 'waiting';
             task.on('error', function (message) {
              // This function alerts `f` and `x` that something has gone awry.
