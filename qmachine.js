@@ -2,7 +2,7 @@
 
 //- qmachine.js ~~
 //                                                      ~~ (c) SRW, 15 Nov 2012
-//                                                  ~~ last updated 14 Jan 2015
+//                                                  ~~ last updated 08 Feb 2015
 
 (function (global, sandbox) {
     'use strict';
@@ -1700,6 +1700,51 @@
             y = JSON.parse(serialize(copy(this)));
             this.comm = comm;
             return y;
+        }
+    });
+
+    defineProperty(AVar.prototype, 'toString', {
+     // NOTE: I commented two of the next three lines out because their values
+     // are the default ones specified by the ES5.1 standard.
+        //configurable: false,
+        enumerable: true,
+        //writable: false,
+        value: function () {
+         // This function delegates to the avar's `val` property if possible.
+         // The code here differs from the code for `AVar.prototype.valueOf`
+         // because it assumes that the returned value should have a particular
+         // type (string). The reasoning here is that, if the returned value
+         // were not a string, the JS engine would *probably* coerce it to a
+         // string, but why worry? Specifying the behavior explicitly is cheap
+         // and easy to understand :-)
+            if (this.val === null) {
+                return 'null';
+            }
+            if (this.val === undefined) {
+                return 'undefined';
+            }
+            return this.val.toString.apply(this.val, arguments);
+        }
+    });
+
+    defineProperty(AVar.prototype, 'valueOf', {
+     // NOTE: I commented two of the next three lines out because their values
+     // are the default ones specified by the ES5.1 standard.
+        //configurable: false,
+        enumerable: true,
+        //writable: false,
+        value: function () {
+         // This function delegates to the avar's `val` property. It would be
+         // easy simply to return the value of the avar's `val` and let the JS
+         // engine decide what to do with it, but that approach assumes that no
+         // value's `valueOf` method ever uses input arguments. That assumption
+         // could be supported by a careful reading of the ES5.1 standard (June
+         // 2011), but the priority here is correctness -- not performance --
+         // and therefore this method has been designed for generic use.
+            if ((this.val === null) || (this.val === undefined)) {
+                return this.val;
+            }
+            return this.val.valueOf.apply(this.val, arguments);
         }
     });
 
